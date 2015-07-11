@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+       <bean id="frontEnd" class="com.calixto.conf.FrontEnd">
+              <property name="port" value="8280"/>
+       </bean>
+
+       <bean id="backEnd" class="com.calixto.conf.BackEnd">
+              <property name="address" value="localhost"/>
+              <property name="port" value="8888"/>
+       </bean>
+</beans>
