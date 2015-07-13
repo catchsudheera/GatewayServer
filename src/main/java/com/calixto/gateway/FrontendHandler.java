@@ -2,26 +2,24 @@
 package com.calixto.gateway;
 
 import com.calixto.models.GatewayMessage;
+import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
-import io.netty.channel.pool.AbstractChannelPoolMap;
-import io.netty.channel.pool.SimpleChannelPool;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import org.apache.log4j.Logger;
 
-import java.net.InetSocketAddress;
-import java.util.concurrent.Future;
 
 public class FrontendHandler extends ChannelInboundHandlerAdapter {
     final static Logger logger = Logger.getLogger(FrontendHandler.class);
-    private final String remoteAddress;
-    private final int remotePort;
+    private Channel outboundChannel;
+    private final String REMOTE_HOST;
+    private final int REMOTE_PORT;
 
-    AbstractChannelPoolMap<InetSocketAddress, SimpleChannelPool> poolMap;
+    public FrontendHandler(Channel outboundChannel, String REMOTE_HOST, int REMOTE_PORT) {
 
-    public FrontendHandler(AbstractChannelPoolMap<InetSocketAddress, SimpleChannelPool> poolMap, String remoteAddress, int remotePort) {
-        this.poolMap = poolMap;
-        this.remoteAddress = remoteAddress;
-        this.remotePort = remotePort;
+        this.outboundChannel = outboundChannel;
+        this.REMOTE_HOST = REMOTE_HOST;
+        this.REMOTE_PORT = REMOTE_PORT;
     }
 
     @Override
@@ -34,8 +32,7 @@ public class FrontendHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof GatewayMessage) {
             GatewayMessage gMessage = (GatewayMessage) msg;
 
-            logger.info("Message Received to gateway server from client length : "+gMessage.getMessageLength()+", message : "+gMessage.getMessage());
-            final Channel outboundChannel = getChannel();
+            logger.info("1. Message Received to gateway server from client length : " + gMessage.getMessageLength() + ", message : " + gMessage.getMessage());
             outboundChannel.attr(Constants.inboundChannel).set(ctx.channel());
 
             /**
@@ -46,14 +43,44 @@ public class FrontendHandler extends ChannelInboundHandlerAdapter {
              * use the newly created GatewayMessage in following writeAndFlush
              */
 
-            outboundChannel.writeAndFlush(msg);
+            writeToChannel(gMessage, outboundChannel);
         }
 
     }
 
-    private Channel getChannel() throws InterruptedException {
-        final SimpleChannelPool pool = poolMap.get(new InetSocketAddress(remoteAddress, remotePort));
-        return pool.acquire().sync().getNow();
+    private void writeToChannel(final GatewayMessage msg, final Channel channel){
+        channel.writeAndFlush(msg).addListeners(new ChannelFutureListener() {
+            public void operationComplete(ChannelFuture future) throws Exception {
+                if (future.isSuccess()){
+                    logger.info("2. Message successfully sent to backend server");
+                } else {
+                    logger.error("Message failed to send to back end server, reconnecting...");
+
+                    final Bootstrap cb = new Bootstrap();
+                    cb.group(channel.eventLoop()).channel(NioSocketChannel.class)
+                            .option(ChannelOption.TCP_NODELAY, true)
+                            .option(ChannelOption.SO_KEEPALIVE, true)
+                            .option(ChannelOption.AUTO_READ, false);
+                    cb.handler(new BackEndHandlerInitializer());
+
+                    final ChannelFuture connectFuture = cb.connect(REMOTE_HOST, REMOTE_PORT);
+                    connectFuture.addListener(new ChannelFutureListener() {
+                        public void operationComplete(ChannelFuture future) throws Exception {
+                            if (future.isSuccess()) {
+                                Channel newChannel = connectFuture.channel();
+                                FrontEndInitializer.outboundChannel=newChannel;
+                                writeToChannel(msg, newChannel);
+                            } else {
+                                logger.error("Error connecting to the Backend Server on " + REMOTE_HOST + ':' + REMOTE_PORT + " ...");
+                                logger.error("Retrying connect to the Backend Server on " + REMOTE_HOST + ':' + REMOTE_PORT + " ...");
+                                Thread.sleep(10000);
+                                writeToChannel(msg, channel);
+                            }
+                        }
+                    });
+                }
+            }
+        });
     }
 
     @Override
