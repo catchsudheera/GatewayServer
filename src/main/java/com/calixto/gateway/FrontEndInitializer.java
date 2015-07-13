@@ -4,7 +4,6 @@ package com.calixto.gateway;
 import com.calixto.codecs.ByteToGatewayMessageDecoder;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.http.HttpServerCodec;
 import org.apache.log4j.Logger;
 
 

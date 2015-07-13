@@ -3,10 +3,8 @@ package com.calixto.gateway;
 
 import com.calixto.models.GatewayMessage;
 import com.calixto.models.QueueElement;
-import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import org.apache.log4j.Logger;
 
 

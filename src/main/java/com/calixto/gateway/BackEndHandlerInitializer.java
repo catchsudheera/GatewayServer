@@ -4,7 +4,6 @@ import com.calixto.codecs.GatewayMessageToByteEncoder;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.http.HttpClientCodec;
 
 /**
  * Created by sudheera on 7/11/15.

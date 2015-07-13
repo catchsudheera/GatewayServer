@@ -28,7 +28,7 @@ public class GatewaySender {
                     logger.trace("Queue is empty");
                 }
             }
-        }, 10, 10, TimeUnit.MILLISECONDS);
+        }, 10, 10, TimeUnit.MICROSECONDS);
     }
 
     private void sendToChannel(final QueueElement element, final Channel channel, final EventLoopGroup workers, final String remoteHost, final int remotePort) {
@@ -62,13 +62,9 @@ public class GatewaySender {
                                     }
                                 }, 100, TimeUnit.MILLISECONDS);
                             }
-
                         }
                     });
-
-
                 }
-
             }
         });
     }
@@ -102,9 +98,5 @@ public class GatewaySender {
 
             }
         });
-
-
-
-
     }
 }

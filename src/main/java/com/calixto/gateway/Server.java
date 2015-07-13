@@ -3,25 +3,13 @@ package com.calixto.gateway;
 
 import com.calixto.conf.BackEnd;
 import com.calixto.conf.FrontEnd;
-import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.pool.AbstractChannelPoolMap;
-import io.netty.channel.pool.ChannelPoolMap;
-import io.netty.channel.pool.SimpleChannelPool;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import java.net.ConnectException;
-import java.net.InetSocketAddress;
 
 public final class Server {
     final static Logger logger = Logger.getLogger(Server.class);
