@@ -1,5 +1,6 @@
 package com.calixto.gateway;
 
+import com.calixto.codecs.ByteToGatewayMessageDecoder;
 import com.calixto.codecs.GatewayMessageToByteEncoder;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -15,6 +16,7 @@ public class BackEndHandlerInitializer extends ChannelInitializer<SocketChannel>
         ChannelPipeline pipeline = ch.pipeline();
 
         pipeline.addLast(new GatewayMessageToByteEncoder());
+        pipeline.addLast(new ByteToGatewayMessageDecoder());
         pipeline.addLast("bh", new BackendHandler());
     }
 }
