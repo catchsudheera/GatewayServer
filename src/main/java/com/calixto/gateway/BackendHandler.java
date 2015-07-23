@@ -2,6 +2,7 @@
 package com.calixto.gateway;
 
 import com.calixto.models.GatewayMessage;
+import com.calixto.models.QueueElement;
 import io.netty.channel.*;
 import org.apache.log4j.Logger;
 
@@ -31,14 +32,16 @@ public class BackendHandler extends ChannelInboundHandlerAdapter {
              * e.g : message = new GatewayMessage(4, "ZXCV", "0004");
              */
 
-            Channel inboundChannel = InboundChannelQueue.getInstance().poll();
+            QueueElement poll = InboundChannelQueue.getInstance().poll();
+            Channel inboundChannel = poll.getInboundChannel();
                 while (inboundChannel == null) {
                     Thread.sleep(2);
-                    inboundChannel = InboundChannelQueue.getInstance().poll();
+                    poll = InboundChannelQueue.getInstance().poll();
+                    inboundChannel = poll.getInboundChannel();
                 }
 
                 if (inboundChannel.isOpen()) {
-                    inboundChannel.writeAndFlush(message).addListener(new ChannelFutureListener() {
+                    inboundChannel.writeAndFlush(message.getMessageWithID(poll.getMessage().getID())).addListener(new ChannelFutureListener() {
                         public void operationComplete(ChannelFuture future) throws Exception {
                             if (future.isSuccess()) {
                                 logger.info("4. Message successfully sent to front end by gateway");

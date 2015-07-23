@@ -18,7 +18,7 @@ public class GatewaySender {
     public volatile Channel outboundChannel;
     final AtomicBoolean connection = new AtomicBoolean();
     final ConcurrentLinkedDeque<QueueElement> queue = MessageQueue.getInstance();
-    final ConcurrentLinkedDeque<Channel> inboundChannelQueue = InboundChannelQueue.getInstance();
+    final ConcurrentLinkedDeque<QueueElement> inboundChannelQueue = InboundChannelQueue.getInstance();
 
     public GatewaySender(final EventLoopGroup workers, final String remoteHost, final int remotePort) throws InterruptedException {
         initChannel(workers, remoteHost, remotePort);
@@ -38,14 +38,14 @@ public class GatewaySender {
 
     private void sendToChannel(final QueueElement element, final Channel channel, final EventLoopGroup workers, final String remoteHost, final int remotePort) {
         logger.info("Sending the message to back end server");
-        inboundChannelQueue.add(element.getInboundChannel());
-        channel.writeAndFlush(element.getMessage()).addListener(new ChannelFutureListener() {
+        inboundChannelQueue.add(element);
+        channel.writeAndFlush(element.getMessage().getMessageWithoutId()).addListener(new ChannelFutureListener() {
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()){
                     logger.info("2. message sending to back end server is successful");
                 } else {
 
-                    inboundChannelQueue.removeLastOccurrence(element.getInboundChannel());
+                    inboundChannelQueue.removeLastOccurrence(element);
                     queue.addFirst(element);
                 }
             }
