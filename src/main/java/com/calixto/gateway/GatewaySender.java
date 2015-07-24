@@ -42,7 +42,7 @@ public class GatewaySender {
         channel.writeAndFlush(element.getMessage().getMessageWithoutId()).addListener(new ChannelFutureListener() {
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()){
-                    logger.info("2. message sending to back end server is successful");
+                    logger.info("2. message sending to back end server is successful > length : " + element.getMessage().getMessageWithoutId().getMessageLength() + " message : " + element.getMessage().getMessageWithoutId().getMessage());
                 } else {
 
                     inboundChannelQueue.removeLastOccurrence(element);

@@ -1,6 +1,7 @@
 package com.calixto.models;
 
-import org.json.JSONObject;
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 
 import java.text.DecimalFormat;
 
@@ -32,9 +33,12 @@ public class GatewayMessage {
 
     public GatewayMessage getMessageWithoutId() {
 
-        JSONObject jsonObject = new JSONObject(this.message);
-        jsonObject.remove("_id");
-        String newMessage = jsonObject.toString() ;
+        DBObject MJsonObj = (DBObject) JSON.parse(this.message);
+        MJsonObj.removeField("_id");
+
+
+
+        String newMessage = JSON.serialize(MJsonObj);
         int newMessageLength = newMessage.length();
         String newNumString = (new DecimalFormat("0000")).format(newMessageLength);
 
@@ -44,10 +48,11 @@ public class GatewayMessage {
     }
 
     public GatewayMessage getMessageWithID(String id) {
-        JSONObject jsonObject = new JSONObject(this.message);
-        jsonObject.accumulate("_id", id);
 
-        String newMessage = jsonObject.toString();
+        DBObject MJsonObj = (DBObject) JSON.parse(this.message);
+        MJsonObj.put("_id", id);
+
+        String newMessage = JSON.serialize(MJsonObj);
         int newMessageLength = newMessage.length();
         String newNumString = (new DecimalFormat("0000")).format(newMessageLength);
 
@@ -55,9 +60,9 @@ public class GatewayMessage {
     }
 
     public String getID() {
-        JSONObject jsonObject = new JSONObject(this.message);
+        DBObject MJsonObj = (DBObject) JSON.parse(this.message);
 
-        return jsonObject.getString("_id");
+        return MJsonObj.get("_id").toString();
     }
 
 }
